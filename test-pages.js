@@ -1,0 +1,1 @@
+const { parseDocument } = require("./server/src/services/documentService"); async function test() { try { const result = await parseDocument("./test.pages"); console.log("Result:", result && result.substring(0, 200) + "..."); } catch(err) { console.error("Error:", err.message); } } test();

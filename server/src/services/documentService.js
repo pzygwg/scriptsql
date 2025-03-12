@@ -5,6 +5,7 @@ const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const cheerio = require('cheerio');
 const { execSync } = require('child_process');
+const AdmZip = require('adm-zip');
 
 /**
  * Parse a document based on its file extension
@@ -142,108 +143,112 @@ function formatFileSize(bytes) {
 
 /**
  * Parse Apple Pages document
- * Note: This is a simple approach that tries to extract text
- * A more robust solution would use a specialized library
+ * @param {string} filePath Path to the document
+ * @returns {Promise<string>} Extracted text content
  */
 async function parsePages(filePath) {
   try {
-    // If on macOS, attempt to use textutil
-    if (process.platform === 'darwin') {
-      try {
-        // Create output file path with a safe name (no spaces)
-        const tempDir = path.dirname(filePath);
-        const baseName = path.basename(filePath, '.pages');
-        // Replace spaces and special characters with underscores for safety
-        const safeBaseName = baseName.replace(/[^a-zA-Z0-9]/g, '_');
-        const tempFile = path.join(tempDir, `${safeBaseName}_converted.txt`);
-        
-        // Use textutil with properly escaped paths
-        // We need to escape both the input and output paths for shell safety
-        const escapedInputPath = filePath.replace(/'/g, "'\\''");
-        const escapedOutputPath = tempFile.replace(/'/g, "'\\''");
-        
-        const command = `textutil -convert txt -output '${escapedOutputPath}' '${escapedInputPath}'`;
-        console.log(`Executing command: ${command}`);
-        
-        // Execute the command
-        execSync(command);
-        
-        // Verify file exists before reading
-        if (!fsSync.existsSync(tempFile)) {
-          throw new Error(`Output file not created: ${tempFile}`);
-        }
-        
-        // Read the converted file
-        const content = await fs.readFile(tempFile, 'utf8');
-        
-        // Clean up the temp file
-        try {
-          await fs.unlink(tempFile);
-        } catch (unlinkErr) {
-          console.error(`Failed to delete temp file ${tempFile}:`, unlinkErr);
-        }
-        
-        return content;
-      } catch (error) {
-        console.error(`Error using textutil to convert Pages document ${filePath}:`, error);
-        // Continue to next method
-      }
+    // Verify file exists before trying to process it
+    if (!fsSync.existsSync(filePath)) {
+      return `Cannot process Pages document: File not found at ${filePath}`;
     }
-    
-    // Fallback: Try to extract text from the Pages package (it's actually a zip file)
-    let AdmZip;
-    try {
-      AdmZip = require('adm-zip');
-    } catch (err) {
-      console.error('adm-zip module not found. Install it with: npm install adm-zip');
-      return `Unable to parse Pages document: ${path.basename(filePath)}\n\nThis appears to be an Apple Pages document. The system attempted to extract text but the required tools were not available. For best results, please export this document as PDF or plain text before uploading.`;
+
+    // If file size is zero or too small to be a valid Pages file
+    const stats = fsSync.statSync(filePath);
+    if (stats.size < 100) { // Reasonable minimum size for a Pages file
+      return `Cannot process Pages document: File appears to be empty or corrupted (${stats.size} bytes)`;
     }
-    
+
+    // Pages files are essentially ZIP archives with XML content
     try {
       const zip = new AdmZip(filePath);
       const entries = zip.getEntries();
       
-      // Look for content in the expected locations in Pages package
-      const contentFiles = [
-        'index.xml', 
-        'QuickLook/Preview.txt',
-        'content.xml',
-        'preview.txt',
-        'preview-micro.txt',
-        'preview-web.txt'
-      ];
+      // First look for the main content file
+      const contentEntry = entries.find(entry => 
+        !entry.isDirectory && 
+        (entry.entryName.includes('index.xml') || 
+         entry.entryName.includes('document.xml') ||
+         entry.entryName.includes('Document.xml') ||
+         entry.entryName.includes('preview-web.html') ||
+         entry.entryName.includes('Preview.html'))
+      );
       
-      // Try to find any of the content files
-      for (const contentFile of contentFiles) {
-        const entry = zip.getEntry(contentFile);
-        if (entry) {
-          const content = zip.readAsText(entry);
-          if (content && content.trim().length > 0) {
-            // Basic cleaning of XML/HTML tags
-            return content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (contentEntry) {
+        const content = zip.readAsText(contentEntry);
+        if (content && content.trim().length > 0) {
+          // If it's HTML content, extract text using cheerio
+          if (contentEntry.entryName.endsWith('.html')) {
+            const $ = cheerio.load(content);
+            return $('body').text().trim();
           }
+          
+          // If it's XML content, extract text by removing tags
+          if (contentEntry.entryName.endsWith('.xml')) {
+            return content
+              .replace(/<[^>]*>/g, ' ')  // Remove XML/HTML tags
+              .replace(/\s+/g, ' ')      // Replace multiple spaces with single space
+              .trim();
+          }
+          
+          return content;
         }
       }
       
-      // If no specific content file was found, just get any text file
+      // If main content not found, try to extract text from all possible content files
+      const allExtractedText = [];
+      
       for (const entry of entries) {
-        if (entry.name.endsWith('.txt') || entry.name.endsWith('.xml')) {
-          const content = zip.readAsText(entry);
-          if (content && content.trim().length > 0) {
-            return content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!entry.isDirectory) {
+          // Look for files that might contain text content
+          if (entry.entryName.endsWith('.txt') || 
+              entry.entryName.endsWith('.xml') || 
+              entry.entryName.includes('content') || 
+              entry.entryName.includes('Content') || 
+              entry.entryName.includes('text') || 
+              entry.entryName.includes('Text') || 
+              entry.entryName.includes('preview') || 
+              entry.entryName.includes('Preview')) {
+            
+            try {
+              const content = zip.readAsText(entry);
+              if (content && content.trim().length > 0) {
+                // For XML files, extract plain text
+                if (entry.entryName.endsWith('.xml')) {
+                  const plainText = content
+                    .replace(/<[^>]*>/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                  
+                  if (plainText.length > 0) {
+                    allExtractedText.push(plainText);
+                  }
+                } else {
+                  allExtractedText.push(content.trim());
+                }
+              }
+            } catch (readErr) {
+              // Ignore errors reading individual files
+              console.log(`Error reading ${entry.entryName}: ${readErr.message}`);
+            }
           }
         }
       }
+      
+      if (allExtractedText.length > 0) {
+        // Filter out duplicates and join all extracted text
+        const uniqueTexts = [...new Set(allExtractedText)];
+        return uniqueTexts.join('\n\n');
+      }
+      
+      // If we couldn't extract text, suggest conversion
+      return `Unable to extract content from ${path.basename(filePath)}\n\nThis appears to be an Apple Pages document. For best results, please export this document as PDF or DOCX before uploading.`;
     } catch (zipError) {
       console.error(`Error extracting text from Pages package ${filePath}:`, zipError);
-      // Continue to fallback
+      return `Error processing Pages document: ${path.basename(filePath)}\n\nThe system encountered an error while processing this file. For best results, please convert it to PDF, DOCX, or TXT format before uploading.`;
     }
-    
-    // If all methods fail, return a helpful placeholder message
-    return `Unable to extract content from Pages document: ${path.basename(filePath)}\n\nThis file appears to be in an unsupported format or may be corrupted. For best results, please convert it to PDF, DOCX, or TXT format before uploading.`;
   } catch (error) {
     console.error(`Error parsing Pages document ${filePath}:`, error);
-    // Return a useful message instead of throwing an error
     return `Error processing Pages document: ${path.basename(filePath)}\n\nThe system encountered an error while processing this file. For best results, please convert it to PDF, DOCX, or TXT format before uploading.`;
   }
 }
