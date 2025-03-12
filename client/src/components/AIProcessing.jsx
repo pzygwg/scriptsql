@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { 
+  ChevronLeft, 
+  ArrowRight
+} from 'lucide-react';
+import ASCIICatLoader from './ASCIICatLoader';
 
 const Container = styled.div`
   margin-bottom: 2rem;
 `;
 
 const Card = styled.div`
-  background-color: var(--secondary-color);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
-  padding: 2rem;
+  padding: 1.5rem;
   margin-bottom: 2rem;
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
 `;
 
 const ProviderOption = styled.div`
@@ -17,20 +24,16 @@ const ProviderOption = styled.div`
   align-items: center;
   padding: 1.5rem;
   border-radius: var(--border-radius);
-  border: 2px solid ${props => props.selected ? 'var(--primary-color)' : 'transparent'};
-  background-color: ${props => props.selected ? 'rgba(0, 113, 227, 0.05)' : 'var(--light-bg)'};
+  border: 1px solid ${props => props.selected ? 'var(--text-color)' : 'var(--border-color)'};
+  background-color: ${props => props.selected ? 'var(--secondary-color)' : 'var(--card-bg)'};
   margin-bottom: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
   
   &:hover {
-    background-color: ${props => props.selected ? 'rgba(0, 113, 227, 0.05)' : '#f0f0f0'};
+    border-color: var(--text-color);
+    box-shadow: var(--box-shadow);
   }
-`;
-
-const ProviderLogo = styled.div`
-  font-size: 2rem;
-  margin-right: 1.5rem;
 `;
 
 const ProviderInfo = styled.div`
@@ -39,11 +42,16 @@ const ProviderInfo = styled.div`
 
 const ProviderName = styled.h3`
   margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 `;
 
 const ProviderDescription = styled.p`
   margin: 0;
   color: var(--text-light);
+  font-size: 0.875rem;
 `;
 
 const ProcessingIndicator = styled.div`
@@ -55,6 +63,31 @@ const ActionButtons = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 2rem;
+`;
+
+const Title = styled.h2`
+  margin-bottom: 1rem;
+`;
+
+const RadioCircle = styled.div`
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--text-color);
+  margin-right: 1.5rem;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: ${props => props.selected ? 'var(--text-color)' : 'transparent'};
+    transition: background-color 0.2s ease;
+  }
 `;
 
 const AIProcessing = ({ onProcess, onBack, isProcessing }) => {
@@ -73,13 +106,15 @@ const AIProcessing = ({ onProcess, onBack, isProcessing }) => {
   
   return (
     <Container>
-      <h2>Step 3: Choose AI Provider</h2>
+      <Title>
+        Step 3: Choose AI Provider
+      </Title>
       <p>Select which AI model you want to use for processing your documents.</p>
       
       {isProcessing ? (
         <Card>
           <ProcessingIndicator>
-            <div className="loader"></div>
+            <ASCIICatLoader />
             <h3 className="mt-4">Processing Documents</h3>
             <p>This may take a few moments depending on the size and number of your documents.</p>
           </ProcessingIndicator>
@@ -90,7 +125,7 @@ const AIProcessing = ({ onProcess, onBack, isProcessing }) => {
             selected={selectedProvider === 'claude'}
             onClick={() => handleProviderSelect('claude')}
           >
-            <ProviderLogo>🧠</ProviderLogo>
+            <RadioCircle selected={selectedProvider === 'claude'} />
             <ProviderInfo>
               <ProviderName>Claude</ProviderName>
               <ProviderDescription>
@@ -103,7 +138,7 @@ const AIProcessing = ({ onProcess, onBack, isProcessing }) => {
             selected={selectedProvider === 'deepseek'}
             onClick={() => handleProviderSelect('deepseek')}
           >
-            <ProviderLogo>🔍</ProviderLogo>
+            <RadioCircle selected={selectedProvider === 'deepseek'} />
             <ProviderInfo>
               <ProviderName>DeepSeek</ProviderName>
               <ProviderDescription>
@@ -119,6 +154,7 @@ const AIProcessing = ({ onProcess, onBack, isProcessing }) => {
               onClick={onBack}
               disabled={isProcessing}
             >
+              <ChevronLeft size={16} strokeWidth={2} />
               Back
             </button>
             <button 
@@ -126,6 +162,7 @@ const AIProcessing = ({ onProcess, onBack, isProcessing }) => {
               className="button"
               disabled={isProcessing}
             >
+              <ArrowRight size={16} strokeWidth={2} />
               Process Documents
             </button>
           </ActionButtons>
@@ -135,4 +172,4 @@ const AIProcessing = ({ onProcess, onBack, isProcessing }) => {
   );
 };
 
-export default AIProcessing; 
+export default AIProcessing;

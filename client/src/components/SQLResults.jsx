@@ -1,35 +1,46 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Copy, CheckCircle, ArrowLeft } from 'lucide-react';
 
 const Container = styled.div`
   margin-bottom: 2rem;
 `;
 
 const ResultsCard = styled.div`
-  background-color: var(--secondary-color);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
-  padding: 2rem;
+  padding: 1.5rem;
   margin-bottom: 2rem;
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
+`;
+
+const Title = styled.h3`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 `;
 
 const SQLContainer = styled.div`
-  background-color: var(--light-bg);
+  background-color: var(--input-bg);
   border-radius: var(--border-radius);
   padding: 1.5rem;
   margin-top: 1.5rem;
   max-height: 500px;
   overflow-y: auto;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+  border: 1px solid var(--border-color);
 `;
 
 const SQLStatement = styled.div`
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e5e7;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
   
   &:last-child {
     margin-bottom: 0;
@@ -46,24 +57,28 @@ const ActionButtons = styled.div`
 
 const CopyButton = styled.button`
   background-color: transparent;
-  color: var(--primary-color);
-  border: none;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  padding: 0.5rem;
-  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
   
   &:hover {
-    text-decoration: underline;
+    background-color: var(--secondary-color);
   }
 `;
 
 const SuccessMessage = styled.span`
   color: var(--success-color);
-  font-size: 0.9rem;
-  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 `;
 
 const SQLResults = ({ results, onReset }) => {
@@ -88,10 +103,20 @@ const SQLResults = ({ results, onReset }) => {
       
       <ResultsCard>
         <div className="flex justify-between align-center">
-          <h3>Generated SQL Statements</h3>
+          <Title>
+            Generated SQL Statements
+          </Title>
           <CopyButton onClick={handleCopyToClipboard}>
-            <span>📋</span> Copy All
-            {copySuccess && <SuccessMessage>Copied!</SuccessMessage>}
+            {copySuccess ? (
+              <SuccessMessage>
+                <CheckCircle size={16} strokeWidth={2} />
+                Copied
+              </SuccessMessage>
+            ) : (
+              <>
+                <Copy size={16} strokeWidth={2} /> Copy
+              </>
+            )}
           </CopyButton>
         </div>
         
@@ -114,6 +139,7 @@ const SQLResults = ({ results, onReset }) => {
           className="button-secondary"
           onClick={onReset}
         >
+          <ArrowLeft size={16} strokeWidth={2} />
           Start Over
         </button>
       </ActionButtons>

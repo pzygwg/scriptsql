@@ -1,34 +1,45 @@
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
+import { 
+  Upload, 
+  X, 
+  ChevronLeft, 
+  Info,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
 
 const Container = styled.div`
   margin-bottom: 2rem;
 `;
 
 const UploadArea = styled.div`
-  border: 2px dashed #ccc;
+  border: 2px dashed var(--border-color);
   border-radius: var(--border-radius);
   padding: 3rem 2rem;
   text-align: center;
   margin-bottom: 2rem;
   transition: all 0.2s ease;
-  background-color: var(--secondary-color);
+  background-color: var(--input-bg);
+  cursor: pointer;
   
   &:hover, &.dragover {
-    border-color: var(--primary-color);
-    background-color: rgba(0, 113, 227, 0.05);
+    border-color: var(--text-color);
+    background-color: var(--secondary-color);
   }
 `;
 
 const UploadIcon = styled.div`
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  color: var(--accent-color);
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
 `;
 
 const UploadText = styled.p`
   margin-bottom: 1.5rem;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: var(--text-color);
 `;
 
 const FileInput = styled.input`
@@ -45,10 +56,16 @@ const FileItem = styled.li`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   border-radius: var(--border-radius);
-  background-color: var(--secondary-color);
-  margin-bottom: 0.5rem;
+  background-color: var(--card-bg);
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    box-shadow: var(--box-shadow);
+  }
   
   &:last-child {
     margin-bottom: 0;
@@ -57,28 +74,33 @@ const FileItem = styled.li`
 
 const FileName = styled.span`
   font-weight: 500;
+  color: var(--text-color);
 `;
 
 const FileSize = styled.span`
   color: var(--text-light);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 `;
 
-const FileTypeIcon = styled.span`
-  margin-right: 0.75rem;
-  color: var(--accent-color);
+const FileDetails = styled.div`
+  margin-left: 1rem;
 `;
 
 const RemoveButton = styled.button`
   background-color: transparent;
-  color: var(--danger-color);
+  color: var(--text-color);
   border: none;
   cursor: pointer;
-  padding: 0.25rem;
-  font-size: 0.9rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
   
   &:hover {
-    text-decoration: underline;
+    background-color: var(--secondary-color);
   }
 `;
 
@@ -88,16 +110,51 @@ const ActionButtons = styled.div`
   margin-top: 2rem;
 `;
 
+const InfoToggle = styled.div`
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--text-light);
+  user-select: none;
+  
+  &:hover {
+    color: var(--text-color);
+  }
+`;
+
+const InfoContent = styled.div`
+  max-height: ${props => props.isVisible ? '500px' : '0'};
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  margin-bottom: ${props => props.isVisible ? '1.5rem' : '0'};
+`;
+
 const InfoPanel = styled.div`
   background-color: var(--secondary-color);
   border-radius: var(--border-radius);
-  padding: 1rem;
-  margin-bottom: 2rem;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  border: 1px solid var(--border-color);
+`;
+
+const InfoIcon = styled.div`
+  color: var(--text-color);
+  margin-top: 2px;
+`;
+
+const Title = styled.h2`
+  margin-bottom: 1rem;
 `;
 
 const DocumentUpload = ({ onSubmit, onBack }) => {
   const [files, setFiles] = useState([]);
   const [dragOver, setDragOver] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const fileInputRef = useRef(null);
   
   const handleFileChange = (e) => {
@@ -144,33 +201,8 @@ const DocumentUpload = ({ onSubmit, onBack }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
   
-  const getFileIcon = (filename) => {
-    const extension = filename.split('.').pop().toLowerCase();
-    
-    // Image formats
-    const imageFormats = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'tif'];
-    if (imageFormats.includes(extension)) {
-      return '🖼️';
-    }
-    
-    switch (extension) {
-      case 'pdf':
-        return '📄';
-      case 'doc':
-      case 'docx':
-        return '📝';
-      case 'xls':
-      case 'xlsx':
-        return '📊';
-      case 'txt':
-        return '📃';
-      case 'md':
-        return '📑';
-      case 'pages':
-        return '📋';
-      default:
-        return '📁';
-    }
+  const toggleInfo = () => {
+    setShowInfo(!showInfo);
   };
   
   const handleSubmit = (e) => {
@@ -182,15 +214,28 @@ const DocumentUpload = ({ onSubmit, onBack }) => {
   
   return (
     <Container>
-      <h2>Step 2: Upload Documents</h2>
-      <p>Upload the documents you want to extract data from. Supported formats: PDF, DOCX, TXT, HTML, MD, Pages and images (PNG, JPG, GIF, etc).</p>
+      <Title>
+        Step 2: Upload Documents
+      </Title>
       
-      <InfoPanel>
-        <p>
-          <strong>Note about images:</strong> You can upload image files directly or documents containing image links.
-          The system will include the image paths or URLs in the generated SQL without analyzing the image content.
-        </p>
-      </InfoPanel>
+      <p>Upload the documents you want to extract data from. Supported formats: PDF, DOCX, TXT, HTML, MD, Pages and images.</p>
+      
+      <InfoToggle onClick={toggleInfo}>
+        {showInfo ? <ChevronUp size={14} /> : <ChevronDown size={14} />} 
+        <span>Notes about file support</span>
+      </InfoToggle>
+      
+      <InfoContent isVisible={showInfo}>
+        <InfoPanel>
+          <InfoIcon>
+            <Info size={18} strokeWidth={2} />
+          </InfoIcon>
+          <p style={{ margin: 0 }}>
+            <strong>Note:</strong> You can upload image files directly or documents containing image links.
+            The system will include the image paths or URLs in the generated SQL without analyzing the image content.
+          </p>
+        </InfoPanel>
+      </InfoContent>
       
       <form onSubmit={handleSubmit}>
         <UploadArea 
@@ -200,7 +245,9 @@ const DocumentUpload = ({ onSubmit, onBack }) => {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
-          <UploadIcon>📂</UploadIcon>
+          <UploadIcon>
+            <Upload size={48} strokeWidth={1.5} />
+          </UploadIcon>
           <UploadText>
             Drag and drop files here, or click to select files
           </UploadText>
@@ -221,19 +268,19 @@ const DocumentUpload = ({ onSubmit, onBack }) => {
             {files.map((file, index) => (
               <FileItem key={index}>
                 <div className="flex align-center">
-                  <FileTypeIcon>{getFileIcon(file.name)}</FileTypeIcon>
-                  <div>
+                  <FileDetails>
                     <FileName>{file.name}</FileName>
                     <div>
                       <FileSize>{formatFileSize(file.size)}</FileSize>
                     </div>
-                  </div>
+                  </FileDetails>
                 </div>
                 <RemoveButton 
                   type="button" 
                   onClick={() => handleRemoveFile(index)}
+                  title="Remove file"
                 >
-                  Remove
+                  <X size={16} strokeWidth={2} />
                 </RemoveButton>
               </FileItem>
             ))}
@@ -242,6 +289,7 @@ const DocumentUpload = ({ onSubmit, onBack }) => {
         
         <ActionButtons>
           <button type="button" className="button-secondary" onClick={onBack}>
+            <ChevronLeft size={16} strokeWidth={2} />
             Back
           </button>
           <button 
@@ -249,7 +297,7 @@ const DocumentUpload = ({ onSubmit, onBack }) => {
             className="button"
             disabled={files.length === 0}
           >
-            Continue to AI Processing
+            Continue
           </button>
         </ActionButtons>
       </form>

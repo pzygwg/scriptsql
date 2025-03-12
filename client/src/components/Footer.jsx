@@ -2,10 +2,12 @@ import React from 'react';
 import styled from 'styled-components';
 
 const FooterContainer = styled.footer`
-  background-color: var(--secondary-color);
-  padding: 2rem 0;
+  background-color: var(--card-bg);
+  padding: 1.5rem 0;
   margin-top: 3rem;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
+  border-top: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 `;
 
 const FooterContent = styled.div`
@@ -23,6 +25,12 @@ const FooterContent = styled.div`
 const Copyright = styled.p`
   margin: 0;
   color: var(--text-light);
+  transition: color 0.3s ease;
+`;
+
+const PoweredBy = styled.div`
+  color: var(--text-light);
+  transition: color 0.3s ease;
 `;
 
 const Footer = () => {
@@ -35,9 +43,9 @@ const Footer = () => {
           <Copyright>
             &copy; {year} ScriptSQL. All rights reserved.
           </Copyright>
-          <div>
-            <span className="text-muted">Powered by AI</span>
-          </div>
+          <PoweredBy>
+            Powered by AI
+          </PoweredBy>
         </FooterContent>
       </div>
     </FooterContainer>
