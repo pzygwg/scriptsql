@@ -39,6 +39,10 @@ async function callClaude(documents, tables, useRawSql) {
     throw new Error('CLAUDE_API_KEY is not set in environment variables');
   }
   
+  if (!CLAUDE_API_KEY.startsWith('sk-ant-api')) {
+    throw new Error('CLAUDE_API_KEY appears to be invalid. It should start with sk-ant-api');
+  }
+  
   // Format the documents content into a single string
   const documentsContent = documents.map(doc => 
     `--- Document: ${doc.filename} ---\n${doc.content}\n\n`
@@ -127,47 +131,59 @@ Expected output format:
   }
 
   // Call Claude API
-  const response = await axios.post('https://api.anthropic.com/v1/messages', {
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 4000,
-    messages: [
-      { role: 'user', content: prompt }
-    ]
-  }, {
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': CLAUDE_API_KEY,
-      'anthropic-version': '2023-06-01'
-    }
-  });
-  
-  // Extract the response content
-  const content = response.data.content[0].text;
-  
-  if (useRawSql) {
-    // Return the SQL statements as an array, splitting by semicolons
-    const sqlStatements = content
-      .replace(/```sql|```/g, '') // Remove any SQL markdown formatting
-      .split(';')
-      .map(sql => sql.trim())
-      .filter(sql => sql.length > 0)
-      .map(sql => sql + ';');
+  try {
+    console.log('Calling Claude API...');
+    const response = await axios.post('https://api.anthropic.com/v1/messages', {
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 4000,
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01'
+      }
+    });
     
-    return sqlStatements;
-  } else {
-    // Parse the JSON from Claude's response
-    try {
-      // Find JSON content (Claude might include markdown code blocks)
-      const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || 
-                        content.match(/```\n([\s\S]*?)\n```/) ||
-                        [null, content];
+    console.log('Claude API response received');
+    
+    // Extract the response content
+    const content = response.data.content[0].text;
+    
+    if (useRawSql) {
+      // Return the SQL statements as an array, splitting by semicolons
+      const sqlStatements = content
+        .replace(/```sql|```/g, '') // Remove any SQL markdown formatting
+        .split(';')
+        .map(sql => sql.trim())
+        .filter(sql => sql.length > 0)
+        .map(sql => sql + ';');
       
-      const jsonContent = jsonMatch[1] || content;
-      return JSON.parse(jsonContent);
-    } catch (error) {
-      console.error('Error parsing JSON from Claude response:', error);
-      throw new Error('Failed to parse AI response: Invalid JSON format');
+      return sqlStatements;
+    } else {
+      // Parse the JSON from Claude's response
+      try {
+        // Find JSON content (Claude might include markdown code blocks)
+        const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || 
+                          content.match(/```\n([\s\S]*?)\n```/) ||
+                          [null, content];
+        
+        const jsonContent = jsonMatch[1] || content;
+        return JSON.parse(jsonContent);
+      } catch (error) {
+        console.error('Error parsing JSON from Claude response:', error);
+        throw new Error('Failed to parse AI response: Invalid JSON format');
+      }
     }
+  } catch (error) {
+    console.error('Error calling Claude API:', error.message);
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Data:', JSON.stringify(error.response.data, null, 2));
+    }
+    throw error;
   }
 }
 
@@ -182,6 +198,10 @@ async function callDeepSeek(documents, tables, useRawSql) {
   const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
   if (!DEEPSEEK_API_KEY) {
     throw new Error('DEEPSEEK_API_KEY is not set in environment variables');
+  }
+  
+  if (!DEEPSEEK_API_KEY.startsWith('sk-')) {
+    throw new Error('DEEPSEEK_API_KEY appears to be invalid. It should start with sk-');
   }
   
   // Format the documents content into a single string

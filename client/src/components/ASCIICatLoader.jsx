@@ -16,45 +16,45 @@ const LoaderContainer = styled.div`
 const ASCIICatLoader = () => {
   const [frameIndex, setFrameIndex] = useState(0);
   
-  // Cat running/walking animation frames
+  // Improved cat running/walking animation frames where the whole cat moves together
   const frames = [
     `
-     /\\_/\\
-    ( o.o )--
-   /(>   >)
-    ^^~~~^^
+    /\\_/\\   
+   ( o.o )  
+  /(>   >)~ 
+   ^~^~^~   
     `,
     `
-     /\\_/\\
-    ( o.o )--
-   /(>   >)
-    ^~~~^~~
+     /\\_/\\  
+    ( o.o )~ 
+   /(>   >)  
+    ~^~^~^   
     `,
     `
-     /\\_/\\
-    ( o.o )~~
-   /(>   >)
-    ~^~~~^~
+      /\\_/\\ 
+     ( o.o ) 
+    /(>   >)~
+     ~^~^~^  
     `,
     `
-     /\\_/\\
-    ( o.o )
-   /(>   >)~~
-    ~~~^~~~^
+     /\\_/\\  
+    ( o.o )~ 
+   /(>   >)  
+    ^~^~^~   
     `,
     `
-     /\\_/\\
-    ( o.o )
-   /(>   >)~-
-    ~^~~~^~
+    /\\_/\\   
+   ( o.o )  
+  /(>   >)~ 
+   ~^~^~^   
     `
   ];
 
   useEffect(() => {
-    // Cycle through frames every 300ms for a faster animation
+    // Cycle through frames every 250ms for a smoother animation
     const interval = setInterval(() => {
       setFrameIndex((prevIndex) => (prevIndex + 1) % frames.length);
-    }, 300);
+    }, 250);
     
     return () => clearInterval(interval);
   }, [frames.length]);

@@ -41,7 +41,16 @@ app.get('/health', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('SERVER ERROR:');
+  console.error('Error message:', err.message);
+  console.error('Error stack:', err.stack);
+  
+  if (err.response) {
+    console.error('Response data:', err.response.data);
+    console.error('Response status:', err.response.status);
+    console.error('Response headers:', err.response.headers);
+  }
+  
   res.status(500).json({
     error: true,
     message: err.message || 'An error occurred on the server'

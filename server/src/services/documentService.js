@@ -13,25 +13,48 @@ const AdmZip = require('adm-zip');
  * @returns {Promise<string>} Document content as text
  */
 async function parseDocument(filePath) {
+  console.log(`Parsing document: ${filePath}`);
+  
+  // Check if file exists
+  try {
+    await fs.access(filePath);
+  } catch (error) {
+    console.error(`File does not exist or is not accessible: ${filePath}`);
+    throw new Error(`File not found: ${filePath}`);
+  }
+  
   const extension = path.extname(filePath).toLowerCase();
   
   try {
+    let result;
+    
     switch (extension) {
       case '.pdf':
-        return await parsePDF(filePath);
+        console.log(`Processing PDF file: ${filePath}`);
+        result = await parsePDF(filePath);
+        break;
       case '.docx':
-        return await parseDocx(filePath);
       case '.doc':
-        return await parseDocx(filePath);
+        console.log(`Processing Word document: ${filePath}`);
+        result = await parseDocx(filePath);
+        break;
       case '.txt':
-        return await parseTxt(filePath);
+        console.log(`Processing text file: ${filePath}`);
+        result = await parseTxt(filePath);
+        break;
       case '.html':
       case '.htm':
-        return await parseHtml(filePath);
+        console.log(`Processing HTML file: ${filePath}`);
+        result = await parseHtml(filePath);
+        break;
       case '.md':
-        return await parseMarkdown(filePath);
+        console.log(`Processing Markdown file: ${filePath}`);
+        result = await parseMarkdown(filePath);
+        break;
       case '.pages':
-        return await parsePages(filePath);
+        console.log(`Processing Pages document: ${filePath}`);
+        result = await parsePages(filePath);
+        break;
       case '.png':
       case '.jpg':
       case '.jpeg':
@@ -41,16 +64,24 @@ async function parseDocument(filePath) {
       case '.svg':
       case '.tiff':
       case '.tif':
-        return await handleImage(filePath);
+        console.log(`Processing image file: ${filePath}`);
+        result = await handleImage(filePath);
+        break;
       default:
         // Check if it might be an image format we didn't explicitly listed
         if (/\.(jpe?g|png|gif|bmp|webp|svg|tiff?)$/i.test(extension)) {
-          return await handleImage(filePath);
+          console.log(`Processing other image format: ${filePath}`);
+          result = await handleImage(filePath);
+        } else {
+          throw new Error(`Unsupported file format: ${extension}`);
         }
-        throw new Error(`Unsupported file format: ${extension}`);
     }
+    
+    console.log(`Successfully parsed document: ${filePath}`);
+    return result;
   } catch (error) {
     console.error(`Error parsing document ${filePath}:`, error);
+    console.error(`Error stack:`, error.stack);
     throw new Error(`Failed to parse document: ${error.message}`);
   }
 }

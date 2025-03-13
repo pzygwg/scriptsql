@@ -126,10 +126,10 @@ const InfoToggle = styled.div`
 `;
 
 const InfoContent = styled.div`
-  max-height: ${props => props.isVisible ? '500px' : '0'};
+  max-height: ${props => props.$isVisible ? '500px' : '0'};
   overflow: hidden;
   transition: max-height 0.3s ease;
-  margin-bottom: ${props => props.isVisible ? '1.5rem' : '0'};
+  margin-bottom: ${props => props.$isVisible ? '1.5rem' : '0'};
 `;
 
 const InfoPanel = styled.div`
@@ -225,7 +225,7 @@ const DocumentUpload = ({ onSubmit, onBack }) => {
         <span>Notes about file support</span>
       </InfoToggle>
       
-      <InfoContent isVisible={showInfo}>
+      <InfoContent $isVisible={showInfo}>
         <InfoPanel>
           <InfoIcon>
             <Info size={18} strokeWidth={2} />

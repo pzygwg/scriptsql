@@ -81,10 +81,10 @@ const InfoToggle = styled.div`
 `;
 
 const InfoContent = styled.div`
-  max-height: ${props => props.isVisible ? '500px' : '0'};
+  max-height: ${props => props.$isVisible ? '500px' : '0'};
   overflow: hidden;
   transition: max-height 0.3s ease;
-  margin-bottom: ${props => props.isVisible ? '1.5rem' : '0'};
+  margin-bottom: ${props => props.$isVisible ? '1.5rem' : '0'};
 `;
 
 const EditorControls = styled.div`
@@ -186,7 +186,7 @@ CREATE TABLE products (
         <span>How it works</span>
       </InfoToggle>
       
-      <InfoContent isVisible={showInfo}>
+      <InfoContent $isVisible={showInfo}>
         <InfoPanel>
           <InfoIcon>
             <Info size={18} strokeWidth={2} />
