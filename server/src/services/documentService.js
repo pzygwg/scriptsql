@@ -6,6 +6,11 @@ const mammoth = require('mammoth');
 const cheerio = require('cheerio');
 const { execSync } = require('child_process');
 const AdmZip = require('adm-zip');
+const textract = require('textract');
+const util = require('util');
+
+// Convert textract callback to promise
+const textractFromFileAsync = util.promisify(textract.fromFileWithPath);
 
 /**
  * Parse a document based on its file extension
@@ -34,9 +39,13 @@ async function parseDocument(filePath) {
         result = await parsePDF(filePath);
         break;
       case '.docx':
-      case '.doc':
-        console.log(`Processing Word document: ${filePath}`);
+        console.log(`Processing DOCX file: ${filePath}`);
         result = await parseDocx(filePath);
+        break;
+      case '.doc':
+        console.log(`Processing DOC file: ${filePath}`);
+        // Use textract specifically for .doc files
+        result = await parseDoc(filePath);
         break;
       case '.txt':
         console.log(`Processing text file: ${filePath}`);
@@ -96,11 +105,29 @@ async function parsePDF(filePath) {
 }
 
 /**
- * Parse DOCX document
+ * Parse DOCX document using mammoth
  */
 async function parseDocx(filePath) {
   const result = await mammoth.extractRawText({ path: filePath });
   return result.value;
+}
+
+/**
+ * Parse DOC document using textract
+ */
+async function parseDoc(filePath) {
+  try {
+    console.log(`Using textract to process .doc file: ${filePath}`);
+    const text = await textractFromFileAsync(filePath);
+    console.log(`Successfully extracted text from .doc file: ${filePath}`);
+    return text;
+  } catch (error) {
+    console.error(`Error extracting text from .doc file: ${error}`);
+    return `[ERROR PROCESSING DOC FILE] 
+Unable to extract text from ${path.basename(filePath)}: ${error.message}
+Please try converting this file to .docx, .pdf, or .txt format.
+[END OF ERROR MESSAGE]`;
+  }
 }
 
 /**
