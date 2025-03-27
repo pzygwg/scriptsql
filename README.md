@@ -32,12 +32,6 @@ ScriptSQL automates the tedious process of manual data entry by:
 *Step 4: Get your generated SQL INSERT statements*
 
 
-## How to Add Screenshots
-
-1. Take screenshots of each step in the application
-2. Save them in a directory (e.g., create a `/screenshots` folder)
-3. Update the image paths in this README to point to your screenshot files
-
 ## Quick Start
 
 ```bash
