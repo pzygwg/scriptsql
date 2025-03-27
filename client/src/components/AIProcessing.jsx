@@ -91,10 +91,10 @@ const RadioCircle = styled.div`
 `;
 
 const AIProcessing = ({ onProcess, onBack, isProcessing }) => {
-  const [selectedProvider, setSelectedProvider] = useState('claude');
+  const [selectedProvider, setSelectedProvider] = useState('deepseek');
   
   const handleProviderSelect = (provider) => {
-    if (!isProcessing) {
+    if (!isProcessing && provider !== 'claude') {
       setSelectedProvider(provider);
     }
   };
@@ -124,12 +124,31 @@ const AIProcessing = ({ onProcess, onBack, isProcessing }) => {
           <ProviderOption 
             selected={selectedProvider === 'claude'}
             onClick={() => handleProviderSelect('claude')}
+            style={{ opacity: 0.6, cursor: 'not-allowed', position: 'relative' }}
           >
+            <div style={{ 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              backgroundColor: 'rgba(0,0,0,0.1)', 
+              borderRadius: 'var(--border-radius)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1,
+              fontSize: '1.2rem',
+              fontWeight: 'bold',
+              color: 'var(--text-color)'
+            }}>
+              🚧 Under Construction 🚧
+            </div>
             <RadioCircle selected={selectedProvider === 'claude'} />
             <ProviderInfo>
               <ProviderName>Claude</ProviderName>
               <ProviderDescription>
-                Anthropic's Claude model is excellent at understanding complex documents and extracting structured data.
+                Anthropic's Claude model is excellent at understanding complex documents and extracting structured data. Also its 3.7 sonnet 🏎️🏎️
               </ProviderDescription>
             </ProviderInfo>
           </ProviderOption>
@@ -142,7 +161,7 @@ const AIProcessing = ({ onProcess, onBack, isProcessing }) => {
             <ProviderInfo>
               <ProviderName>DeepSeek</ProviderName>
               <ProviderDescription>
-                DeepSeek's AI model is optimized for deep information extraction and analysis.
+                DeepSeek's AI model is optimized for deep information extraction and analysis. Btw R1🏎️🏎️
               </ProviderDescription>
             </ProviderInfo>
           </ProviderOption>

@@ -41,12 +41,12 @@ const Footer = () => {
       <div className="container">
         <FooterContent>
           <Copyright>
-            &copy; {year} ScriptSQL. All rights reserved.
+            &copy; {year} ScriptSQL  ❤️
           </Copyright>
           <PoweredBy>
-            Powered by AI
+            deepseek my beloved
           </PoweredBy>
-        </FooterContent>
+        </FooterContent>  
       </div>
     </FooterContainer>
   );

@@ -50,19 +50,34 @@ const InputHelper = styled.div`
 `;
 
 const InfoPanel = styled.div`
-  background-color: rgba(0, 112, 243, 0.05);
+  background-color: var(--secondary-color);
   border-radius: var(--border-radius);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  border: 1px solid rgba(0, 112, 243, 0.1);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  
+  &::before {
+    content: '😹';
+    position: absolute;
+    opacity: 0.1;
+    font-size: 6rem;
+    right: -1rem;
+    bottom: -1.5rem;
+  }
 `;
 
 const InfoIcon = styled.div`
-  color: var(--primary-color);
-  margin-top: 2px;
+  color: var(--text-color);
+  margin-right: 1rem;
+  float: left;
+  padding: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const InfoToggle = styled.div`
@@ -74,9 +89,17 @@ const InfoToggle = styled.div`
   font-size: 0.875rem;
   color: var(--text-light);
   user-select: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 2rem;
+  background-color: var(--card-bg);
+  display: inline-flex;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
   
   &:hover {
     color: var(--text-color);
+    background-color: var(--secondary-color);
+    transform: translateY(-1px);
   }
 `;
 
@@ -116,124 +139,34 @@ const SQLTableInput = ({ onSubmit, initialTables = [] }) => {
   const [showInfo, setShowInfo] = useState(false);
 
   const loadSampleSQL = () => {
-    setSqlInput(`-- Create movies table with all the requested fields
-CREATE TABLE IF NOT EXISTS movies (
-  id INT AUTO_INCREMENT PRIMARY KEY, --1
-  title VARCHAR(255) NOT NULL, --2
-  international_title VARCHAR(255), --3
-  year INT, --4
-  duration VARCHAR(50), --5
-  format VARCHAR(100), --6
-  genre VARCHAR(100), --7
-  genre_en VARCHAR(100), --8
-  languages VARCHAR(255), --9
-  languages_en VARCHAR(255), --10
-  subtitles VARCHAR(255), --11
-  subtitles_en VARCHAR(255), --12
-  colorimetry VARCHAR(100), --13
-  colorimetry_en VARCHAR(100), --14
-  release_date DATE, --15
-  short_synopsis TEXT, --16
-  short_synopsis_en TEXT, --17
-  long_synopsis TEXT, --18
-  long_synopsis_en TEXT, --19
-  director_notes TEXT, --20
-  director_notes_en TEXT, --21
-  literary_sources TEXT, --22
-  literary_sources_en TEXT, --23
-  references_info TEXT, --24
-  references_info_en TEXT, --25
-  director VARCHAR(255) NOT NULL, --26
-  screenwriter VARCHAR(255), --27
-  author VARCHAR(255), --28
-  co_author VARCHAR(255), --29
-  production VARCHAR(255), --30
-  co_production VARCHAR(255), --31
-  cinematographer VARCHAR(255), --32
-  camera_operator VARCHAR(255), --33
-  sound_engineer VARCHAR(255), --34
-  sound_operator VARCHAR(255), --35
-  sound_assistants TEXT, --36
-  sound_assistants_en TEXT, --37
-  editor VARCHAR(255), --38
-  chief_editor VARCHAR(255), --39
-  assistant_editor VARCHAR(255), --40
-  editing_intern VARCHAR(255), --41
-  sound_editor VARCHAR(255), --42
-  sound_designer VARCHAR(255), --43
-  composer VARCHAR(255), --44
-  original_music TEXT, --45
-  original_music_en TEXT, --46
-  mixing VARCHAR(255), --47
-  color_grading VARCHAR(255), --48
-  visual_effects TEXT, --49
-  visual_effects_en TEXT, --50
-  three_d_work TEXT, --51
-  animation TEXT, --52
-  set_designer VARCHAR(255), --53
-  set_decoration TEXT, --54
-  set_decoration_en TEXT, --55
-  costume_designer VARCHAR(255), --56
-  makeup_hair TEXT, --57
-  makeup_hair_en TEXT, --58
-  production_companies TEXT, --59
-  production_companies_en TEXT, --60
-  financial_support TEXT, --61
-  financial_support_en TEXT, --62
-  grants TEXT, --63
-  grants_en TEXT, --64
-  distribution VARCHAR(255), --65
-  international_sales VARCHAR(255), --66
-  press_agent VARCHAR(255), --67
-  festivals TEXT, --68
-  festivals_en TEXT, --69
-  awards TEXT, --70
-  awards_en TEXT, --71
-  nominations TEXT, --72
-  nominations_en TEXT, --73
-  distinctions TEXT, --74
-  distinctions_en TEXT, --75
-  tv_channels TEXT, --76
-  vod_platforms TEXT, --77
-  broadcast_dates TEXT, --78
-  shooting_format VARCHAR(100), --79
-  aspect_ratio VARCHAR(50), --80
-  distribution_media TEXT, --81
-  distribution_media_en TEXT, --82
-  sound_type VARCHAR(100), --83
-  cnc_visa VARCHAR(100), --84
-  isan VARCHAR(100), --85
-  age_restriction VARCHAR(50), --86
-  keywords TEXT, --87
-  keywords_en TEXT, --88
-  director_biography TEXT, --89
-  filmography TEXT, --90
-  director_contact TEXT, --91
-  availability TEXT, --92
-  rights TEXT, --93
-  promotion_marketing TEXT, --94
-  financial_elements TEXT, --95
-  box_office TEXT, --96
-  audience TEXT, --97
-  dvd_edition TEXT, --98
-  archive_elements TEXT, --99
-  authorizations TEXT, --100
-  other_info TEXT, --101
-  vimeo_link VARCHAR(255), --102
-  category ENUM('released', 'in project') NOT NULL, --103
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, --104
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP --105
+    setSqlInput(`-- Create a simple movies database
+CREATE TABLE movies (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  release_year INT,
+  genre VARCHAR(100),
+  director VARCHAR(255),
+  duration INT COMMENT 'Duration in minutes',
+  rating DECIMAL(3,1) COMMENT 'Rating from 0.0 to 10.0'
 );
 
--- Create movie_images table for multiple images per movie
-CREATE TABLE IF NOT EXISTS movie_images (
+-- Create a table for movie reviews
+CREATE TABLE reviews (
   id INT AUTO_INCREMENT PRIMARY KEY,
   movie_id INT NOT NULL,
-  image_url VARCHAR(255) NOT NULL,
-  is_primary BOOLEAN DEFAULT FALSE,
-  image_type ENUM('poster', 'still', 'behind_the_scenes', 'promotional', 'other') DEFAULT 'still',
-  caption VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  reviewer_name VARCHAR(255) NOT NULL,
+  rating INT COMMENT 'Rating from 1 to 5',
+  review_text TEXT,
+  review_date DATE,
+  FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE
+);
+
+-- Create a table for cast members
+CREATE TABLE cast_members (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  movie_id INT NOT NULL,
+  actor_name VARCHAR(255) NOT NULL,
+  character_name VARCHAR(255),
   FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE
 );`);
   };
@@ -285,9 +218,9 @@ CREATE TABLE IF NOT EXISTS movie_images (
       <InfoContent $isVisible={showInfo}>
         <InfoPanel>
           <InfoIcon>
-            <Info size={18} strokeWidth={2} />
+            <Info size={20} strokeWidth={2.5} />
           </InfoIcon>
-          <p style={{ margin: 0 }}>
+          <p style={{ margin: 0, position: 'relative', zIndex: 1 }}>
             <strong>How it works:</strong> The AI will use your CREATE TABLE statements to understand the structure of your data. 
             It will then extract information from your documents that fits this structure and generate INSERT statements.
           </p>

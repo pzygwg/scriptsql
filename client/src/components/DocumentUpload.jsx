@@ -93,14 +93,12 @@ const RemoveButton = styled.button`
   border: none;
   cursor: pointer;
   padding: 0.5rem;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease;
   
   &:hover {
-    background-color: var(--secondary-color);
+    box-shadow: none;
   }
 `;
 
@@ -119,9 +117,17 @@ const InfoToggle = styled.div`
   font-size: 0.875rem;
   color: var(--text-light);
   user-select: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 2rem;
+  background-color: var(--card-bg);
+  display: inline-flex;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
   
   &:hover {
     color: var(--text-color);
+    background-color: var(--secondary-color);
+    transform: translateY(-1px);
   }
 `;
 
@@ -135,16 +141,31 @@ const InfoContent = styled.div`
 const InfoPanel = styled.div`
   background-color: var(--secondary-color);
   border-radius: var(--border-radius);
-  padding: 1rem 1.5rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--border-color);
+  
+  &::before {
+    content: '📄';
+    position: absolute;
+    opacity: 0.1;
+    font-size: 6rem;
+    right: -1rem;
+    bottom: -1.5rem;
+  }
 `;
 
 const InfoIcon = styled.div`
   color: var(--text-color);
-  margin-top: 2px;
+  margin-right: 1rem;
+  float: left;
+  padding: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Title = styled.h2`
@@ -228,9 +249,9 @@ const DocumentUpload = ({ onSubmit, onBack }) => {
       <InfoContent $isVisible={showInfo}>
         <InfoPanel>
           <InfoIcon>
-            <Info size={18} strokeWidth={2} />
+            <Info size={20} strokeWidth={2.5} />
           </InfoIcon>
-          <p style={{ margin: 0 }}>
+          <p style={{ margin: 0, position: 'relative', zIndex: 1 }}>
             <strong>Note:</strong> You can upload image files directly or documents containing image links.
             The system will include the image paths or URLs in the generated SQL without analyzing the image content.
           </p>
