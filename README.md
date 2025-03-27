@@ -21,14 +21,14 @@ ScriptSQL automates the tedious process of manual data entry by:
 ![Step 1: Define SQL Tables](https://github.com/pzygwg/scriptsql/blob/main/screenshots/db.png)
 *Step 1: Define your SQL schema with CREATE TABLE statements*
 
-![Step 2: Upload Documents]((https://github.com/pzygwg/scriptsql/blob/main/screenshots/upload.png))
+![Step 2: Upload Documents](https://github.com/pzygwg/scriptsql/blob/main/screenshots/upload.png)
 *Step 2: Upload the documents containing your data*
 
 ![Step 3: Choose AI Provider](https://github.com/pzygwg/scriptsql/blob/main/screenshots/model.png)
 *Step 3: Select which AI provider to use for processing*
 
-![Step 4.1: View Results]((https://github.com/pzygwg/scriptsql/blob/main/screenshots/result1.png))
-![Step 4.2: View Results]((https://github.com/pzygwg/scriptsql/blob/main/screenshots/result2.png))
+![Step 4.1: View Results](https://github.com/pzygwg/scriptsql/blob/main/screenshots/result1.png)
+![Step 4.2: View Results](https://github.com/pzygwg/scriptsql/blob/main/screenshots/result2.png)
 *Step 4: Get your generated SQL INSERT statements*
 
 
